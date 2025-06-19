@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Certificate Generator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>🎓 Certificate Generator</h2>
+    <div class="btn-group">
+      <button onclick="generateCertificate()">Generate</button>
+      <button onclick="printCertificate()">Print</button>
+      <button onclick="downloadImage()">Download Image</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+    </div>
+    <canvas id="certificateCanvas" width="1000" height="700"></canvas>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
