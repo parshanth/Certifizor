@@ -1,14 +1,23 @@
 const express = require('express');
 const connectDB = require('./config/db');
 require('dotenv').config();
+const studentRoutes = require('./routes/student.routes.js');
 
 const path = require('path');
 const app = express();
 const PORT = 3000;
+
+
 connectDB();
+
+
 console.log('Connected to MongoDB');
+
+app.use(express.json());
+
 // Serve static files
 app.use(express.static('public'));
+app.use('/api/students', studentRoutes);
 
 // Dynamic certificate verification page
 app.get('/verify/:id', (req, res) => {
@@ -48,6 +57,7 @@ app.get('/verify/:id', (req, res) => {
   `;
   res.send(html);
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
