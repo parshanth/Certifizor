@@ -1,0 +1,7 @@
+/* subtle glass + animation */
+* {
+  transition: all 0.2s ease-in-out;
+}
+body {
+  backdrop-filter: blur(12px);
+}
