@@ -1,0 +1,42 @@
+<h2 class="text-2xl font-bold mb-4">Select Certificate Template</h2>
+
+<form action="/save-template" method="POST">
+  <!-- Hidden input to store selected template -->
+  <input type="hidden" name="template" id="selectedTemplate" required>
+
+  <div class="grid grid-cols-2 gap-6">
+    <img src="/template1.png" 
+         alt="Template 1" 
+         data-value="template1.png"
+         class="selectable-template border-4 border-transparent rounded cursor-pointer transition" />
+
+    <img src="/template2.png" 
+         alt="Template 2" 
+         data-value="template2.png"
+         class="selectable-template border-4 border-transparent rounded cursor-pointer transition" />
+  </div>
+
+  <div class="mt-6">
+    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded shadow hover:bg-blue-700 transition">
+      💾 Save Template
+    </button>
+  </div>
+</form>
+
+<script>
+  const images = document.querySelectorAll('.selectable-template');
+  const hiddenInput = document.getElementById('selectedTemplate');
+
+  images.forEach(img => {
+    img.addEventListener('click', () => {
+      // Remove active border from all
+      images.forEach(i => i.classList.remove('border-blue-500'));
+      
+      // Add border to selected
+      img.classList.add('border-blue-500');
+
+      // Update hidden input value
+      hiddenInput.value = img.dataset.value;
+    });
+  });
+</script>

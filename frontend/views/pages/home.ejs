@@ -1,0 +1,65 @@
+<div x-data="{ tab: 'all' }" class="space-y-6">
+
+  <!-- Tabs -->
+  <div class="flex space-x-4 border-b">
+    <button @click="tab = 'all'" :class="{ 'border-blue-600 text-blue-600': tab === 'all' }"
+      class="pb-2 border-b-2 font-semibold text-gray-600 hover:text-blue-600">
+      All Students
+    </button>
+    <button @click="tab = 'send'" :class="{ 'border-blue-600 text-blue-600': tab === 'send' }"
+      class="pb-2 border-b-2 font-semibold text-gray-600 hover:text-blue-600">
+      Send Certificates
+    </button>
+  </div>
+
+  <!-- All Students Table -->
+  <div x-show="tab === 'all'" class="overflow-x-auto">
+    <table class="w-full table-auto bg-white shadow rounded">
+      <thead class="bg-gray-100 text-left text-sm font-semibold text-gray-600">
+        <tr>
+          <th class="p-3">Name</th>
+          <th class="p-3">Student ID</th>
+          <th class="p-3">Email</th>
+          <th class="p-3">Internship Status</th>
+          <th class="p-3">Certificate Sent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% students.forEach(student => { %>
+          <tr class="border-t text-sm">
+            <td class="p-3"><%= student.name %></td>
+            <td class="p-3"><%= student.studentId %></td>
+            <td class="p-3"><%= student.email %></td>
+            <td class="p-3">
+              <%= student.internshipCompleted ? '✅ Completed' : '⏳ Pending' %>
+            </td>
+            <td class="p-3">
+              <%= student.certificateSent ? '✅ Sent' : '❌ Not Sent' %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Send Certificates Section -->
+  <div x-show="tab === 'send'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <% students.forEach(student => {
+         if (student.internshipCompleted && !student.certificateSent) { %>
+      <div class="bg-white shadow rounded p-4 flex flex-col justify-between">
+        <div class="mb-2">
+          <h3 class="text-lg font-bold"><%= student.name %></h3>
+          <p class="text-sm text-gray-600">ID: <%= student.studentId %></p>
+          <p class="text-sm text-gray-600">Email: <%= student.email %></p>
+        </div>
+        <form action="/send-certificate" method="POST" class="mt-4">
+          <input type="hidden" name="studentId" value="<%= student._id %>" />
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+            Send Certificate
+          </button>
+        </form>
+      </div>
+    <% } }) %>
+  </div>
+
+</div>

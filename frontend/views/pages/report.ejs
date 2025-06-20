@@ -1,0 +1,124 @@
+<!-- views/pages/report.ejs -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<section class="space-y-6 p-6">
+
+  <h2 class="text-3xl font-bold text-gray-800 mb-4">📊 Reports Dashboard</h2>
+
+  <!-- Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Total Students -->
+    <div onclick="toggleList('all')" class="cursor-pointer bg-white shadow p-6 rounded-xl border-l-4 border-blue-500 hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold">👥 Total Students</h3>
+      <p class="text-2xl text-gray-800 font-bold"><%= totalStudents %></p>
+    </div>
+
+    <!-- Certificates Sent -->
+    <div onclick="toggleList('cert')" class="cursor-pointer bg-white shadow p-6 rounded-xl border-l-4 border-green-500 hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold">📨 Certificates Sent</h3>
+      <p class="text-2xl text-gray-800 font-bold"><%= certificatesSent %></p>
+    </div>
+
+    <!-- Offer Letters Sent -->
+    <div onclick="toggleList('offer')" class="cursor-pointer bg-white shadow p-6 rounded-xl border-l-4 border-purple-500 hover:shadow-lg transition">
+      <h3 class="text-xl font-semibold">📬 Offer Letters Sent</h3>
+      <p class="text-2xl text-gray-800 font-bold"><%= offerLettersSent %></p>
+    </div>
+  </div>
+
+  <!-- Toggleable Tables -->
+  <div id="studentLists" class="mt-8 space-y-8">
+
+    <!-- All Students -->
+    <div id="list-all" class="hidden">
+      <h4 class="text-xl font-bold text-blue-600 mb-2">👥 All Students</h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border rounded shadow">
+          <thead class="bg-blue-100">
+            <tr>
+              <th class="text-left px-4 py-2">Name</th>
+              <th class="text-left px-4 py-2">Student ID</th>
+              <th class="text-left px-4 py-2">Email</th>
+              <th class="text-left px-4 py-2">Certificate</th>
+              <th class="text-left px-4 py-2">Offer Letter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% students.forEach(s => { %>
+              <tr class="border-t">
+                <td class="px-4 py-2"><%= s.name %></td>
+                <td class="px-4 py-2"><%= s.studentId %></td>
+                <td class="px-4 py-2"><%= s.email %></td>
+                <td class="px-4 py-2"><%= s.certificateSent ? "✅ Sent" : "❌ Not Sent" %></td>
+                <td class="px-4 py-2"><%= s.offerLetterSent ? "✅ Sent" : "❌ Not Sent" %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Certificates Sent -->
+    <div id="list-cert" class="hidden">
+      <h4 class="text-xl font-bold text-green-600 mb-2">📨 Certificate Recipients</h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border rounded shadow">
+          <thead class="bg-green-100">
+            <tr>
+              <th class="text-left px-4 py-2">Name</th>
+              <th class="text-left px-4 py-2">Student ID</th>
+              <th class="text-left px-4 py-2">Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% students.filter(s => s.certificateSent).forEach(s => { %>
+              <tr class="border-t">
+                <td class="px-4 py-2"><%= s.name %></td>
+                <td class="px-4 py-2"><%= s.studentId %></td>
+                <td class="px-4 py-2"><%= s.email %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Offer Letters Sent -->
+    <div id="list-offer" class="hidden">
+      <h4 class="text-xl font-bold text-purple-600 mb-2">📬 Offer Letter Recipients</h4>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border rounded shadow">
+          <thead class="bg-purple-100">
+            <tr>
+              <th class="text-left px-4 py-2">Name</th>
+              <th class="text-left px-4 py-2">Student ID</th>
+              <th class="text-left px-4 py-2">Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% students.filter(s => s.offerLetterSent).forEach(s => { %>
+              <tr class="border-t">
+                <td class="px-4 py-2"><%= s.name %></td>
+                <td class="px-4 py-2"><%= s.studentId %></td>
+                <td class="px-4 py-2"><%= s.email %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Toggle Script -->
+<script>
+  function toggleList(type) {
+    const sections = ['all', 'cert', 'offer'];
+    sections.forEach(id => {
+      document.getElementById('list-' + id).classList.add('hidden');
+    });
+    document.getElementById('list-' + type).classList.remove('hidden');
+  }
+</script>
