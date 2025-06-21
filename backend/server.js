@@ -2,6 +2,7 @@ const express = require('express');
 const connectDB = require('./config/db');
 require('dotenv').config();
 const studentRoutes = require('./routes/student.routes.js');
+const Student = require('./models/student');
 
 const path = require('path');
 const app = express();
@@ -17,26 +18,41 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/login', (req, res) => {
+app.get('/', (req, res) => {
   res.render('pages/login');
 });
 
-app.get('/home', (req, res) => {
-  res.render('pages/home');
+app.get('/signup', (req, res) => {
+  res.render('pages/signup');
 });
 
+app.get('/home', async (req, res) => {
+  try {
+    const students = await Student.find();
+
+    // Map DB fields to what home.ejs expects
+    const mappedStudents = students.map(s => ({
+      name: s.name,
+      studentId: s.certId || s._id, // Use certId if available, else Mongo _id
+      email: s.email,
+      internshipCompleted: s.Offered || false, // Or use your own logic
+      certificateSent: s.printed || false,
+      _id: s._id // Needed for the form in "Send Certificates"
+    }));
+
+    res.render('pages/home', { students: mappedStudents });
+  } catch (err) {
+    res.status(500).send('Error loading students');
+  }
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
 app.use('/api/students', studentRoutes);
-
-
-
-
-
-
-
-
-
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 
