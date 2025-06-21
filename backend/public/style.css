@@ -1,41 +1,7 @@
+/* subtle glass + animation */
+* {
+  transition: all 0.2s ease-in-out;
+}
 body {
-  background-color: #121212;
-  color: #fff;
-  font-family: 'Segoe UI', sans-serif;
-  text-align: center;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  padding: 30px;
-}
-
-h2 {
-  margin-bottom: 20px;
-}
-
-.btn-group {
-  margin-bottom: 20px;
-}
-
-button {
-  background-color: #1f1f1f;
-  color: white;
-  border: 1px solid #444;
-  padding: 10px 20px;
-  margin: 5px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #333;
-}
-
-canvas {
-  margin-top: 20px;
-  background: #fff;
-  border: 2px solid #666;
+  backdrop-filter: blur(12px);
 }
