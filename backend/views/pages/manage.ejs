@@ -6,18 +6,19 @@
   </div>
 
   <!-- Add Student Form -->
-  <form class="bg-white p-6 rounded shadow space-y-4">
+  <form class="bg-white p-6 rounded shadow space-y-4" method="POST" action="/manage">
     <h3 class="text-lg font-semibold">Add New Student</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <input type="text" name="name" placeholder="Name" class="border p-2 rounded w-full" />
-      <input type="email" name="email" placeholder="Email" class="border p-2 rounded w-full" />
-      <input type="text" name="studentId" placeholder="Student ID" class="border p-2 rounded w-full" />
+      <input type="text" name="name" placeholder="Name" class="border p-2 rounded w-full" required />
+      <input type="email" name="email" placeholder="Email" class="border p-2 rounded w-full" required />
+      <input type="text" name="from" placeholder="From Date" class="border p-2 rounded w-full" required />
+      <input type="text" name="to" placeholder="To Date" class="border p-2 rounded w-full" required />
+      <input type="text" name="phone" placeholder="Phone" class="border p-2 rounded w-full" required />
     </div>
     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
       ➕ Add Student
     </button>
   </form>
-
   <!-- Student List -->
   <div class="bg-white p-6 rounded shadow">
     <h3 class="text-lg font-semibold mb-4">Student List</h3>

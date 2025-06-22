@@ -96,6 +96,26 @@ app.get('/manage', async (req, res) => {
     res.status(500).send('Failed to load student data');
   }
 });
+app.post('/manage', async (req, res) => {
+  const { name, email, from, to, phone } = req.body;
+  if (!name || !email || !from || !to || !phone) {
+    // Optionally, you can show an error message on the page
+    return res.status(400).send('All fields are required');
+  }
+  try {
+    const existing = await Student.findOne({ $or: [{ email }, { phone }] });
+    if (existing) {
+      // Optionally, you can show an error message on the page
+      return res.status(409).send('Email or phone already exists');
+    }
+    const student = new Student({ name, email, from, to, phone });
+    await student.save();
+    res.redirect('/manage'); // Refresh the page to show the new student
+  } catch (err) {
+    console.error('Failed to add student:', err);
+    res.status(500).send('Failed to add student');
+  }
+});
 
 // Report Page
 app.get('/report', async (req, res) => {
