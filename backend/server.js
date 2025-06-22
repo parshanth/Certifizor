@@ -1,63 +1,132 @@
 const express = require('express');
-const connectDB = require('./config/db');
-require('dotenv').config();
-const studentRoutes = require('./routes/student.routes.js');
-const Student = require('./models/student');
-
 const path = require('path');
+const dotenv = require('dotenv');
+const expressLayouts = require('express-ejs-layouts');
+
+const connectDB = require('./config/db');
+const Student = require('./models/student');
+const studentRoutes = require('./routes/student.routes');
+
+dotenv.config();
+
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-
+// Connect to MongoDB
 connectDB();
 
-
-console.log('Connected to MongoDB');
-
+// EJS and Layout Setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.use(expressLayouts);
 
-// Serve static files
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Global layout variable
+app.use((req, res, next) => {
+  res.locals.pageTitle = 'Certifizor';
+  next();
+});
+
+// Login Page
+app.get('/pages/login', (req, res) => {
+  res.render('pages/login', { pageTitle: 'Login', layout: false });
+});
+
+// Signup Page
+app.get('/pages/signup', (req, res) => {
+  res.render('pages/signup', { pageTitle: 'Signup', layout: false });
+});
+
+// Redirect root to login
 app.get('/', (req, res) => {
-  res.render('pages/login');
+  res.redirect('/pages/login');
 });
 
-app.get('/signup', (req, res) => {
-  res.render('pages/signup');
-});
-
+// Home Page
 app.get('/home', async (req, res) => {
   try {
     const students = await Student.find();
 
-    // Map DB fields to what home.ejs expects
     const mappedStudents = students.map(s => ({
       name: s.name,
-      studentId: s.certId || s._id, // Use certId if available, else Mongo _id
+      studentId: s.certId || s._id,
       email: s.email,
-      internshipCompleted: s.Offered || false, // Or use your own logic
+      internshipCompleted: s.Offered || false,
       certificateSent: s.printed || false,
-      _id: s._id // Needed for the form in "Send Certificates"
+      _id: s._id,
     }));
 
-    res.render('pages/home', { students: mappedStudents });
+    res.render('pages/home', {
+      pageTitle: 'Home',
+      students: mappedStudents,
+    });
   } catch (err) {
+    console.error('Failed to load students:', err);
     res.status(500).send('Error loading students');
   }
 });
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Edit Template Page
+app.get('/edit-template', (req, res) => {
+  res.render('pages/edit-template', { pageTitle: 'Edit Template' });
+});
 
+// Manage Students Page
+app.get('/manage', async (req, res) => {
+  try {
+    const students = await Student.find();
 
-app.use('/api/students', studentRoutes);
-app.use(express.static(path.join(__dirname, 'public')));
+    const mappedStudents = students.map(s => ({
+      _id: s._id,
+      name: s.name,
+      studentId: s.certId || s._id,
+      status: s.Offered ? 'Completed' : 'Pending',
+    }));
 
+    res.render('pages/manage', {
+      pageTitle: 'Manage Students',
+      students: mappedStudents,
+    });
+  } catch (err) {
+    console.error('Error fetching students for manage page:', err);
+    res.status(500).send('Failed to load student data');
+  }
+});
 
+// Report Page
+app.get('/report', async (req, res) => {
+  try {
+    const students = await Student.find();
 
+    const totalStudents = students.length;
+    const certificatesSent = students.filter(s => s.printed).length;
+    const offerLettersSent = students.filter(s => s.Offered).length;
 
-// Dynamic certificate verification page
+    const mappedStudents = students.map(s => ({
+      name: s.name,
+      studentId: s.certId || s._id,
+      certificateSent: s.printed,
+      offerLetterSent: s.Offered,
+    }));
+
+    res.render('pages/report', {
+      pageTitle: 'Report',
+      totalStudents,
+      certificatesSent,
+      offerLettersSent,
+      students: mappedStudents,
+    });
+  } catch (err) {
+    console.error('Error generating report:', err);
+    res.status(500).send('Failed to load report data');
+  }
+});
+
+// Certificate Verification Page
 app.get('/verify/:id', (req, res) => {
   const certId = req.params.id;
   const html = `
@@ -96,7 +165,15 @@ app.get('/verify/:id', (req, res) => {
   res.send(html);
 });
 
+// Logout
+app.get('/logout', (req, res) => {
+  res.redirect('/');
+});
 
+// API Routes
+app.use('/api/students', studentRoutes);
+
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
