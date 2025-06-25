@@ -1,0 +1,14 @@
+<section class="space-y-6">
+  <h2 class="text-2xl font-bold mb-4">Edit Student</h2>
+  <form method="POST" action="/manage/edit/<%= student._id %>" class="bg-white p-6 rounded shadow space-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <input type="text" name="name" value="<%= student.name %>" class="border p-2 rounded w-full" required />
+      <input type="email" name="email" value="<%= student.email %>" class="border p-2 rounded w-full" required />
+      <input type="text" name="from" value="<%= student.from %>" class="border p-2 rounded w-full" required />
+      <input type="text" name="to" value="<%= student.to %>" class="border p-2 rounded w-full" required />
+      <input type="text" name="phone" value="<%= student.phone %>" class="border p-2 rounded w-full" required />
+    </div>
+    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Update</button>
+    <a href="/manage" class="ml-4 text-blue-600 hover:underline">Cancel</a>
+  </form>
+</section>

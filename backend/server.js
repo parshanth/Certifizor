@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
 const expressLayouts = require('express-ejs-layouts');
+const nodemailer = require('nodemailer');
+const fs = require('fs');
 
 const connectDB = require('./config/db');
 const Student = require('./models/student');
@@ -21,8 +23,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Global layout variable
@@ -51,14 +53,21 @@ app.get('/home', async (req, res) => {
   try {
     const students = await Student.find();
 
-    const mappedStudents = students.map(s => ({
-      name: s.name,
-      studentId: s.certId || s._id,
-      email: s.email,
-      internshipCompleted: s.Offered || false,
-      certificateSent: s.printed || false,
-      _id: s._id,
-    }));
+    const today = new Date();
+    const mappedStudents = students.map(s => {
+      // Parse the 'to' date (format: DD/MM/YYYY)
+      const [day, month, year] = s.to.split('/');
+      const endDate = new Date(`${year}-${month}-${day}T23:59:59`);
+
+      return {
+        name: s.name,
+        studentId: s.certId || s._id,
+        email: s.email,
+        internshipCompleted: today >= endDate,
+        certificateSent: s.printed || false,
+        _id: s._id,
+      };
+    });
 
     res.render('pages/home', {
       pageTitle: 'Home',
@@ -114,6 +123,36 @@ app.post('/manage', async (req, res) => {
   } catch (err) {
     console.error('Failed to add student:', err);
     res.status(500).send('Failed to add student');
+  }
+});
+app.post('/manage/delete/:id', async (req, res) => {
+  try {
+    await Student.findByIdAndDelete(req.params.id);
+    res.redirect('/manage');
+  } catch (err) {
+    res.status(500).send('Failed to delete student');
+  }
+});
+
+// Show edit form
+app.get('/manage/edit/:id', async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).send('Student not found');
+    res.render('pages/edit-student', { student, pageTitle: 'Edit Student' });
+  } catch (err) {
+    res.status(500).send('Failed to load student');
+  }
+});
+
+// Handle update
+app.post('/manage/edit/:id', async (req, res) => {
+  const { name, email, from, to, phone } = req.body;
+  try {
+    await Student.findByIdAndUpdate(req.params.id, { name, email, from, to, phone });
+    res.redirect('/manage');
+  } catch (err) {
+    res.status(500).send('Failed to update student');
   }
 });
 
@@ -192,6 +231,55 @@ app.get('/logout', (req, res) => {
 
 // API Routes
 app.use('/api/students', studentRoutes);
+
+// Send Certificate
+app.post('/send-certificate', async (req, res) => {
+  const { studentId, certificateImage } = req.body;
+  try {
+    const student = await Student.findById(studentId);
+    if (!student) return res.status(404).send('Student not found');
+
+    // Save the image temporarily
+    const base64Data = certificateImage.replace(/^data:image\/png;base64,/, "");
+    const filePath = `./tmp/certificate_${studentId}.png`;
+    fs.writeFileSync(filePath, base64Data, 'base64');
+
+    // Send email with nodemailer
+    let transporter = nodemailer.createTransport({
+      // Configure your SMTP here
+      service: 'gmail',
+      auth: {
+        user: 'process.env.EMAIL_USER ',
+        pass: 'process.env.EMAIL_PASS'
+      }
+    });
+
+    await transporter.sendMail({
+      from: '"Certifizor" <your_email@gmail.com>',
+      to: student.email,
+      subject: 'Your Internship Certificate',
+      text: 'Congratulations! Please find your certificate attached.',
+      attachments: [
+        {
+          filename: 'certificate.png',
+          path: filePath
+        }
+      ]
+    });
+
+    // Mark as printed
+    student.printed = true;
+    await student.save();
+
+    // Remove temp file
+    fs.unlinkSync(filePath);
+
+    res.redirect('/home');
+  } catch (err) {
+    console.error('Failed to send certificate:', err);
+    res.status(500).send('Failed to send certificate');
+  }
+});
 
 // Start Server
 app.listen(PORT, () => {

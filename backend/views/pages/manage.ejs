@@ -39,9 +39,18 @@
             <td class="px-4 py-2"><%= student.studentId %></td>
             <td class="px-4 py-2"><%= student.status %></td>
             <td class="px-4 py-2 space-x-2">
-              <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">Update</button>
-              <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">Delete</button>
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Send Offer</button>
+              <!-- Update button (opens a modal or navigates to edit page, here as a link for simplicity) -->
+              <a href="/manage/edit/<%= student._id %>" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded">Update</a>
+              
+              <!-- Delete button -->
+              <form action="/manage/delete/<%= student._id %>" method="POST" style="display:inline;">
+                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded" onclick="return confirm('Are you sure?')">Delete</button>
+              </form>
+              
+              <!-- Send Offer button (optional, not implemented here) -->
+              <form action="/manage/offer/<%= student._id %>" method="POST" style="display:inline;">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded">Send Offer</button>
+              </form>
             </td>
           </tr>
         <% }) %>

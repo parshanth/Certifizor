@@ -54,12 +54,27 @@
         </div>
         <form action="/send-certificate" method="POST" class="mt-4">
           <input type="hidden" name="studentId" value="<%= student._id %>" />
-          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+          <button type="button"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+            onclick="openCertificateModal('<%= student._id %>', '<%= student.name %>', '<%= student.from %>', '<%= student.to %>', '<%= student.email %>')">
             Send Certificate
           </button>
         </form>
       </div>
     <% } }) %>
+  </div>
+
+  <!-- Certificate Modal -->
+  <div id="certificateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded shadow-lg relative">
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-gray-500 text-2xl">&times;</button>
+      <canvas id="certificateCanvas" width="1000" height="700" class="mb-4 border"></canvas>
+      <form id="sendCertForm" method="POST" action="/send-certificate">
+        <input type="hidden" name="studentId" id="modalStudentId" />
+        <input type="hidden" name="certificateImage" id="certificateImage" />
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Send</button>
+      </form>
+    </div>
   </div>
 
 </div>

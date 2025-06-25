@@ -1,11 +1,25 @@
-function generateCertificate() {
+function openCertificateModal(studentId, name, from, to, email) {
+  document.getElementById('certificateModal').classList.remove('hidden');
+  document.getElementById('modalStudentId').value = studentId;
+
+  // Generate the certificate with the student's data
+  generateCertificate(name, from, to);
+
+  // Save the image data to a hidden input for sending after a short delay
+  setTimeout(() => {
+    const canvas = document.getElementById('certificateCanvas');
+    document.getElementById('certificateImage').value = canvas.toDataURL('image/png');
+  }, 800);
+}
+
+function closeModal() {
+  document.getElementById('certificateModal').classList.add('hidden');
+}
+
+// Modify generateCertificate to accept parameters
+function generateCertificate(name, fromDate, toDate) {
   const canvas = document.getElementById('certificateCanvas');
   const ctx = canvas.getContext('2d');
-
-  const name = 'Parshanth';
-  const fromDate = '2024-05-01';
-  const toDate = '2024-06-15';
-
   const uniqueId = `KAIZEN${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
   const message = `This is to certify that ${name} has successfully completed the internship at Kaizenspark Private Limited from ${fromDate} to ${toDate}, demonstrating dedication, professionalism, and a strong willingness to learn throughout the training period.`;
 
@@ -35,7 +49,6 @@ function generateCertificate() {
 
     // Generate QR Code for verification
     const verifyUrl = `http://localhost:3000/verify/${uniqueId}`;
-    console.log('Verification URL:', verifyUrl);
     QRCode.toDataURL(verifyUrl, (err, url) => {
       if (err) return console.error('QR Error', err);
       const qrImg = new Image();
