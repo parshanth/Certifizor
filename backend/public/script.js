@@ -30,11 +30,11 @@ function generateCertificate(name, fromDate, toDate) {
   img.onload = () => {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Draw Name
+    // Draw Name (big, bold, centered, and in all capitals)
     ctx.font = 'bold 40px Georgia';
     ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
-    ctx.fillText(name, canvas.width / 2, 340);
+    ctx.fillText(name.toUpperCase(), canvas.width / 2, 340);
 
     // Draw message
     ctx.font = '20px Times New Roman';
