@@ -22,7 +22,7 @@ function generateCertificate(name, fromDate, toDate) {
   const ctx = canvas.getContext('2d');
   const uniqueId = `KAIZEN${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
   const message = `This is to certify that ${name} has successfully completed the internship at Kaizenspark Private Limited from ${fromDate} to ${toDate}, demonstrating dedication, professionalism, and a strong willingness to learn throughout the training period.`;
-
+  console.log(fromDate, toDate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const img = new Image();
   img.src = 'cer.jpg';

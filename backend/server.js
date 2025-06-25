@@ -63,6 +63,8 @@ app.get('/home', async (req, res) => {
         name: s.name,
         studentId: s.certId || s._id,
         email: s.email,
+        from: s.from,         // <-- ADD THIS
+        to: s.to,             // <-- ADD THIS
         internshipCompleted: today >= endDate,
         certificateSent: s.printed || false,
         _id: s._id,
@@ -249,9 +251,10 @@ app.post('/send-certificate', async (req, res) => {
       // Configure your SMTP here
       service: 'gmail',
       auth: {
-        user: 'process.env.EMAIL_USER ',
-        pass: 'process.env.EMAIL_PASS'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
       }
+
     });
 
     await transporter.sendMail({
