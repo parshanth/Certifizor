@@ -96,6 +96,9 @@ app.get('/manage', async (req, res) => {
       name: s.name,
       studentId: s.certId || s._id,
       status: s.Offered ? 'Completed' : 'Pending',
+      from: s.from,      // <-- add this
+      to: s.to,          // <-- add this
+      email: s.email     // <-- add this
     }));
 
     res.render('pages/manage', {
