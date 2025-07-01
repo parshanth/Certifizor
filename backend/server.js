@@ -5,6 +5,7 @@ const expressLayouts = require('express-ejs-layouts');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const fs = require('fs');
+const session = require('express-session');
 
 const connectDB = require('./config/db');
 const Student = require('./models/student');
@@ -28,6 +29,13 @@ app.use(expressLayouts);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Session middleware (add after other middleware)
+app.use(session({
+  secret: 'your-secret-key', // Change this to a strong secret in production!
+  resave: false,
+  saveUninitialized: false
+}));
 
 // Global layout variable
 app.use((req, res, next) => {
@@ -121,9 +129,9 @@ app.get('/', (req, res) => {
 
 
 // Home Page
-app.get('/home', async (req, res) => {
+app.get('/home', requireLogin, async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find({ organization: req.session.organization });
 
     const today = new Date();
     const mappedStudents = students.map(s => {
@@ -135,8 +143,8 @@ app.get('/home', async (req, res) => {
         name: s.name,
         studentId: s.certId || s._id,
         email: s.email,
-        from: s.from,         // <-- ADD THIS
-        to: s.to,             // <-- ADD THIS
+        from: s.from,
+        to: s.to,
         internshipCompleted: today >= endDate,
         certificateSent: s.printed || false,
         _id: s._id,
@@ -159,18 +167,18 @@ app.get('/edit-template', (req, res) => {
 });
 
 // Manage Students Page
-app.get('/manage', async (req, res) => {
+app.get('/manage', requireLogin, async (req, res) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find({ organization: req.session.organization });
 
     const mappedStudents = students.map(s => ({
       _id: s._id,
       name: s.name,
       studentId: s.certId || s._id,
       status: s.Offered ? 'Completed' : 'Pending',
-      from: s.from,      // <-- add this
-      to: s.to,          // <-- add this
-      email: s.email     // <-- add this
+      from: s.from,
+      to: s.to,
+      email: s.email
     }));
 
     res.render('pages/manage', {
@@ -182,19 +190,14 @@ app.get('/manage', async (req, res) => {
     res.status(500).send('Failed to load student data');
   }
 });
-app.post('/manage', async (req, res) => {
+app.post('/manage', requireLogin, async (req, res) => {
   const { name, email, from, to, phone } = req.body;
   if (!name || !email || !from || !to || !phone) {
     // Optionally, you can show an error message on the page
     return res.status(400).send('All fields are required');
   }
   try {
-    const existing = await Student.findOne({ $or: [{ email }, { phone }] });
-    if (existing) {
-      // Optionally, you can show an error message on the page
-      return res.status(409).send('Email or phone already exists');
-    }
-    const student = new Student({ name, email, from, to, phone });
+    const student = new Student({ name, email, from, to, phone, organization: req.session.organization });
     await student.save();
     res.redirect('/manage'); // Refresh the page to show the new student
   } catch (err) {
@@ -303,7 +306,9 @@ app.get('/verify/:id', (req, res) => {
 
 // Logout
 app.get('/logout', (req, res) => {
-  res.redirect('/');
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
 });
 
 // API Routes
@@ -358,6 +363,40 @@ app.post('/send-certificate', async (req, res) => {
     res.status(500).send('Failed to send certificate');
   }
 });
+
+// Login Handler
+app.post('/pages/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user || user.password !== password) {
+    return res.send('Invalid email or password');
+  }
+  // Store organization in session
+  req.session.organization = user.Organization;
+  req.session.userId = user._id;
+  res.redirect('/home');
+});
+
+// Signup Handler
+app.post('/pages/signup', async (req, res) => {
+  const { Organization, email, password } = req.body;
+  if (!Organization || !email || !password) {
+    return res.send('All fields are required');
+  }
+  const existing = await User.findOne({ email });
+  if (existing) return res.send('User already exists');
+  const user = new User({ Organization, email, password }); // ⚠️ Hash password in production!
+  await user.save();
+  res.redirect('/pages/login');
+});
+
+// Middleware to require login
+function requireLogin(req, res, next) {
+  if (!req.session.organization) {
+    return res.redirect('/pages/login');
+  }
+  next();
+}
 
 // Start Server
 app.listen(PORT, () => {

@@ -17,13 +17,11 @@ const studentSchema = new mongoose.Schema({
   email:{
     type: String,
     required: true,
-    unique: true,
     trim: true
   },
   phone: {
     type: String,
     required: true,
-    unique: true,
     trim: true
   },
   printed: {
@@ -38,7 +36,8 @@ const studentSchema = new mongoose.Schema({
     type: String,
     unique: true,
     sparse: true // Allows null values until generated
-  }
+  },
+  organization:String
 }, { timestamps: true });
 
 module.exports = mongoose.model('Student', studentSchema, 'Students');
