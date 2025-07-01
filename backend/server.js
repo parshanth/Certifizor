@@ -3,10 +3,12 @@ const path = require('path');
 const dotenv = require('dotenv');
 const expressLayouts = require('express-ejs-layouts');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 const fs = require('fs');
 
 const connectDB = require('./config/db');
 const Student = require('./models/student');
+const User = require('./models/User');
 const studentRoutes = require('./routes/student.routes');
 
 dotenv.config();
@@ -33,20 +35,90 @@ app.use((req, res, next) => {
   next();
 });
 
-// Login Page
+
+// Login
 app.get('/pages/login', (req, res) => {
-  res.render('pages/login', { pageTitle: 'Login', layout: false });
+  res.render('pages/login', { layout: false });
 });
 
-// Signup Page
+// Signup
 app.get('/pages/signup', (req, res) => {
-  res.render('pages/signup', { pageTitle: 'Signup', layout: false });
+  res.render('pages/signup', { layout: false });
 });
+
+// Forgot Password
+app.get('/forgot-password', (req, res) => {
+  res.render('pages/forgot-password', { layout: false });
+});
+
+app.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.send('User not found');
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  user.resetOtp = otp;
+  user.otpExpiry = Date.now() + 10 * 60 * 1000;
+  await user.save();
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  await transporter.sendMail({
+    to: email,
+    subject: 'OTP for Password Reset',
+    text: `Your OTP is: ${otp}`
+  });
+
+  res.redirect(`/verify-otp?email=${email}`);
+});
+
+// Verify OTP
+app.get('/verify-otp', (req, res) => {
+  res.render('pages/verify-otp', { email: req.query.email, layout: false });
+});
+
+app.post('/verify-otp', async (req, res) => {
+  const { email, otp } = req.body;
+  const user = await User.findOne({ email });
+
+  if (!user || user.resetOtp !== otp || Date.now() > user.otpExpiry) {
+    return res.send('Invalid or expired OTP');
+  }
+
+  res.redirect(`/reset-password?email=${email}`);
+});
+
+// Reset Password
+app.get('/reset-password', (req, res) => {
+  res.render('pages/reset-password', { email: req.query.email, layout: false });
+});
+
+app.post('/reset-password', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.send('User not found');
+
+  user.password = password; // ⚠️ You should hash this in production
+  user.resetOtp = null;
+  user.otpExpiry = null;
+  await user.save();
+
+  res.send('✅ Password updated! <a href="/pages/login">Login</a>');
+});
+
 
 // Redirect root to login
 app.get('/', (req, res) => {
   res.redirect('/pages/login');
 });
+
+
 
 // Home Page
 app.get('/home', async (req, res) => {
