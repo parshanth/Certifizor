@@ -55,7 +55,7 @@
               <!-- Send Certificate button -->
               <button type="button"
                 class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                onclick="openCertificateModal('<%= student._id %>', '<%= student.name %>', '<%= student.from %>', '<%= student.to %>', '<%= student.email %>')">
+                onclick="openCertificateModal('<%= student._id %>', '<%= student.name %>', '<%= student.from %>', '<%= student.to %>', '<%= student.email %>', '<%= student.organization || organization %>')">
                 Send Certificate
               </button>
               

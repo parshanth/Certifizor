@@ -55,8 +55,8 @@
         <form action="/send-certificate" method="POST" class="mt-4">
           <input type="hidden" name="studentId" value="<%= student._id %>" />
           <button type="button"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
-            onclick="openCertificateModal('<%= student._id %>', '<%= student.name %>', '<%= student.from %>', '<%= student.to %>', '<%= student.email %>')">
+            class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+            onclick="openCertificateModal('<%= student._id %>', '<%= student.name %>', '<%= student.from %>', '<%= student.to %>', '<%= student.email %>', '<%= student.organization || organization %>')">
             Send Certificate
           </button>
         </form>

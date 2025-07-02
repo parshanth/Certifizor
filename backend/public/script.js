@@ -1,9 +1,9 @@
-function openCertificateModal(studentId, name, from, to, email) {
+function openCertificateModal(studentId, name, from, to, email, organization) {
   document.getElementById('certificateModal').classList.remove('hidden');
   document.getElementById('modalStudentId').value = studentId;
 
   // Generate the certificate with the student's data
-  generateCertificate(name, from, to);
+  generateCertificate(name, from, to, organization);
 
   // Save the image data to a hidden input for sending after a short delay
   setTimeout(() => {
@@ -16,12 +16,12 @@ function closeModal() {
   document.getElementById('certificateModal').classList.add('hidden');
 }
 
-// Modify generateCertificate to accept parameters
-function generateCertificate(name, fromDate, toDate) {
+// Modify generateCertificate to accept organization
+function generateCertificate(name, fromDate, toDate, organization) {
   const canvas = document.getElementById('certificateCanvas');
   const ctx = canvas.getContext('2d');
   const uniqueId = `KAIZEN${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
-  const message = `This is to certify that ${name} has successfully completed the internship at Kaizenspark Private Limited from ${fromDate} to ${toDate}, demonstrating dedication, professionalism, and a strong willingness to learn throughout the training period.`;
+  const message = `This is to certify that ${name} has successfully completed the internship at ${organization} from ${fromDate} to ${toDate}, demonstrating dedication, professionalism, and a strong willingness to learn throughout the training period.`;
   console.log(fromDate, toDate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const img = new Image();

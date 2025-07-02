@@ -154,6 +154,7 @@ app.get('/home', requireLogin, async (req, res) => {
     res.render('pages/home', {
       pageTitle: 'Home',
       students: mappedStudents,
+      organization: req.session.organization // <-- add this
     });
   } catch (err) {
     console.error('Failed to load students:', err);
