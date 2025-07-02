@@ -25,7 +25,7 @@ function generateCertificate(name, fromDate, toDate, organization) {
   console.log(fromDate, toDate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const img = new Image();
-  img.src = 'cer.jpg';
+  img.src = '/templates/cer.jpg';
 
   img.onload = () => {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);

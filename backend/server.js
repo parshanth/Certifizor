@@ -185,6 +185,7 @@ app.get('/manage', requireLogin, async (req, res) => {
     res.render('pages/manage', {
       pageTitle: 'Manage Students',
       students: mappedStudents,
+      organization: req.session.organization
     });
   } catch (err) {
     console.error('Error fetching students for manage page:', err);
