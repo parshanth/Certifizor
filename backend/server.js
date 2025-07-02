@@ -340,13 +340,20 @@ app.post('/send-certificate', async (req, res) => {
     await transporter.sendMail({
       from: '"Certifizor" <your_email@gmail.com>',
       to: student.email,
-      subject: 'Your Internship Certificate',
-      text: 'Congratulations! Please find your certificate attached.',
+      subject: 'Internship Certificate from Certifizor',
+      text: `Dear ${student.name},
+
+  Congratulations on successfully completing your internship at ${student.organization}!
+
+  Please find your internship certificate attached to this email.
+
+  Best regards,
+  Certifizor Team`,
       attachments: [
-        {
-          filename: 'certificate.png',
-          path: filePath
-        }
+      {
+        filename: 'certificate.png',
+        path: filePath
+      }
       ]
     });
 
