@@ -37,7 +37,9 @@ const studentSchema = new mongoose.Schema({
     unique: true,
     sparse: true // Allows null values until generated
   },
-  organization:String
+  organization:String,
+  college: String,
+  internshipRole: String
 }, { timestamps: true });
 
 module.exports = mongoose.model('Student', studentSchema, 'Students');

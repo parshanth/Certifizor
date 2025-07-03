@@ -6,11 +6,16 @@ const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const session = require('express-session');
+const libre = require('libreoffice-convert'); 
+const tmp = require('tmp'); 
 
 const connectDB = require('./config/db');
 const Student = require('./models/student');
 const User = require('./models/User');
 const studentRoutes = require('./routes/student.routes');
+
+const Docxtemplater = require('docxtemplater');
+const PizZip = require('pizzip');
 
 dotenv.config();
 
@@ -193,15 +198,23 @@ app.get('/manage', requireLogin, async (req, res) => {
   }
 });
 app.post('/manage', requireLogin, async (req, res) => {
-  const { name, email, from, to, phone } = req.body;
-  if (!name || !email || !from || !to || !phone) {
-    // Optionally, you can show an error message on the page
+  const { name, email, from, to, phone, college, internshipRole } = req.body;
+  if (!name || !email || !from || !to || !phone || !college || !internshipRole) {
     return res.status(400).send('All fields are required');
   }
   try {
-    const student = new Student({ name, email, from, to, phone, organization: req.session.organization });
+    const student = new Student({
+      name,
+      email,
+      from,
+      to,
+      phone,
+      college,
+      internshipRole,
+      organization: req.session.organization
+    });
     await student.save();
-    res.redirect('/manage'); // Refresh the page to show the new student
+    res.redirect('/manage');
   } catch (err) {
     console.error('Failed to add student:', err);
     res.status(500).send('Failed to add student');
@@ -229,12 +242,159 @@ app.get('/manage/edit/:id', async (req, res) => {
 
 // Handle update
 app.post('/manage/edit/:id', async (req, res) => {
-  const { name, email, from, to, phone } = req.body;
+  const { name, email, from, to, phone, college, internshipRole } = req.body;
   try {
-    await Student.findByIdAndUpdate(req.params.id, { name, email, from, to, phone });
+    await Student.findByIdAndUpdate(req.params.id, { name, email, from, to, phone, college, internshipRole });
     res.redirect('/manage');
   } catch (err) {
     res.status(500).send('Failed to update student');
+  }
+});
+
+// Send Offer Letter
+
+app.post('/manage/offer/:id', async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).send('Student not found');
+
+    const templatePath = path.join(__dirname, 'public', 'templates', 'offer.docx');
+    const content = fs.readFileSync(templatePath, 'binary');
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+    function getMonthDiff(from, to) {
+    const [fromDay, fromMonth, fromYear] = from.split('/').map(Number);
+    const [toDay, toMonth, toYear] = to.split('/').map(Number);
+    const fromDate = new Date(fromYear, fromMonth - 1, fromDay);
+    const toDate = new Date(toYear, toMonth - 1, toDay);
+    let months = (toDate.getFullYear() - fromDate.getFullYear()) * 12 + (toDate.getMonth() - fromDate.getMonth());
+    if (toDate.getDate() < fromDate.getDate()) months--;
+    months = Math.max(months, 0) + 1;
+    return months === 1 ? '1 month' : `${months} months`;
+    }
+
+    const duration = getMonthDiff(student.from, student.to);
+
+    const data = {
+      Name: student.name,
+      StartDate: student.from,
+      CollegeName: student.college || student.organization || '',
+      PhoneNumber: student.phone,
+      Email: student.email,
+      InternshipRole: student.internshipRole || 'Developer Intern',
+      InternshipDuration: duration
+    };
+
+    try {
+      doc.render(data);
+    } catch (error) {
+      return res.status(500).send('Error filling offer letter template');
+    }
+
+    const buf = doc.getZip().generate({ type: 'nodebuffer' });
+
+    // Save the DOCX temporarily
+    const docxTmpPath = tmp.tmpNameSync({ postfix: '.docx' });
+    fs.writeFileSync(docxTmpPath, buf);
+
+    // Convert DOCX to PDF using ConvertAPI v2 JSON API
+    const axios = require('axios');
+    const pdfTmpPath = tmp.tmpNameSync({ postfix: '.pdf' });
+    const offerFileName = `Offer_Letter_${student.name.replace(/\s+/g, '_')}.pdf`;
+    let pdfBuffer;
+    try {
+      const convertApiToken = process.env.CONVERTAPI_TOKEN;
+      if (!convertApiToken) {
+        throw new Error('ConvertAPI Bearer token not set in environment variables.');
+      }
+      // Read DOCX and encode as base64
+      const docxData = fs.readFileSync(docxTmpPath);
+      const docxBase64 = docxData.toString('base64');
+      const payload = {
+        Parameters: [
+          {
+            Name: 'File',
+            FileValue: {
+              Name: 'offer.docx',
+              Data: docxBase64
+            }
+          },
+          {
+            Name: 'StoreFile',
+            Value: true
+          }
+        ]
+      };
+      const response = await axios.post(
+        'https://v2.convertapi.com/convert/doc/to/pdf',
+        payload,
+        {
+          headers: {
+            'Authorization': `Bearer ${convertApiToken}`,
+            'Content-Type': 'application/json'
+          },
+          responseType: 'json'
+        }
+      );
+      const fileUrl = response.data.Files[0].Url;
+      const pdfRes = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+      pdfBuffer = Buffer.from(pdfRes.data);
+      fs.writeFileSync(pdfTmpPath, pdfBuffer);
+    } catch (err) {
+      console.error('PDF conversion via ConvertAPI failed:', err);
+      fs.unlinkSync(docxTmpPath);
+      return res.status(500).send('PDF conversion failed. Check your ConvertAPI token and internet connection.');
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    const mailOptions = {
+          from: 'Certifizor <' + process.env.EMAIL_USER + '>',
+          to: student.email,
+          subject: 'Your Internship Offer Letter – ' + (student.organization || 'Certifizor'),
+          text: `Dear ${student.name},
+
+        Congratulations!
+
+        We are thrilled to offer you the position of *${student.internshipRole}* at ${student.organization || 'our organization'} for the internship period from ${student.from} to ${student.to}. This opportunity reflects our confidence in your potential and skills.
+
+        Please find your official internship offer letter attached with this email.
+
+        If you have any questions or need further assistance, feel free to reach out.
+
+        Welcome aboard!
+
+        Best regards,  
+        ${student.organization || 'Certifizor Team'}`
+        ,
+          attachments: [
+            {
+              filename: offerFileName,
+              path: pdfTmpPath
+            }
+          ]
+        };
+
+
+    await transporter.sendMail(mailOptions);
+
+    student.Offered = true;
+    await student.save();
+
+    fs.unlinkSync(docxTmpPath);
+    fs.unlinkSync(pdfTmpPath);
+
+    res.redirect('/manage');
+  } catch (err) {
+    console.error('Failed to send offer letter:', err);
+    res.status(500).send('Failed to send offer letter');
   }
 });
 
@@ -340,7 +500,7 @@ app.post('/send-certificate', async (req, res) => {
     });
 
     await transporter.sendMail({
-      from: '"Certifizor" <your_email@gmail.com>',
+      from: 'Certifizor <' + process.env.EMAIL_USER + '>',
       to: student.email,
       subject: 'Internship Certificate from Certifizor',
       text: `Dear ${student.name},
@@ -352,10 +512,10 @@ app.post('/send-certificate', async (req, res) => {
   Best regards,
   Certifizor Team`,
       attachments: [
-      {
-        filename: 'certificate.png',
-        path: filePath
-      }
+        {
+          filename: 'certificate.png',
+          path: filePath
+        }
       ]
     });
 
