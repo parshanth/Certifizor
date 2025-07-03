@@ -5,15 +5,17 @@
   <input type="hidden" name="template" id="selectedTemplate" required>
 
   <div class="grid grid-cols-2 gap-6">
-    <img src="/template1.png" 
-         alt="Template 1" 
-         data-value="template1.png"
-         class="selectable-template border-4 border-transparent rounded cursor-pointer transition" />
-
-    <img src="/template2.png" 
-         alt="Template 2" 
-         data-value="template2.png"
-         class="selectable-template border-4 border-transparent rounded cursor-pointer transition" />
+    <% if (templates && templates.length) { %>
+      <% templates.forEach(function(template) { %>
+        <img src="/templates/<%= template %>"
+             alt="<%= template %>"
+             data-value="<%= template %>"
+             class="selectable-template border-4 border-transparent rounded cursor-pointer transition"
+             style="max-width: 400px; max-height: 400px; object-fit: contain;" />
+      <% }) %>
+    <% } else { %>
+      <p class="col-span-2 text-gray-500">No templates found.</p>
+    <% } %>
   </div>
 
   <div class="mt-6">

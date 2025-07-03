@@ -168,8 +168,18 @@ app.get('/home', requireLogin, async (req, res) => {
 });
 
 // Edit Template Page
-app.get('/edit-template', (req, res) => {
-  res.render('pages/edit-template', { pageTitle: 'Edit Template' });
+const fsPromises = require('fs').promises;
+app.get('/edit-template', async (req, res) => {
+  try {
+    const templatesDir = path.join(__dirname, 'public', 'templates');
+    const files = await fsPromises.readdir(templatesDir);
+    // Only include image files (png, jpg, jpeg, gif)
+    const templates = files.filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
+    res.render('pages/edit-template', { pageTitle: 'Edit Template', templates });
+  } catch (err) {
+    console.error('Failed to load templates:', err);
+    res.render('pages/edit-template', { pageTitle: 'Edit Template', templates: [] });
+  }
 });
 
 // Manage Students Page
