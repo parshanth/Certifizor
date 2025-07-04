@@ -155,6 +155,7 @@ app.get('/home', requireLogin, async (req, res) => {
         internshipCompleted: today >= endDate,
         certificateSent: s.printed || false,
         _id: s._id,
+        certId: s.certId, // <-- add this if not present
       };
     });
 
@@ -196,7 +197,9 @@ app.get('/manage', requireLogin, async (req, res) => {
       status: s.Offered ? 'Completed' : 'Pending',
       from: s.from,
       to: s.to,
-      email: s.email
+      email: s.email,
+      certId: s.certId, // <-- add this if not present
+      
     }));
 
     res.render('pages/manage', {

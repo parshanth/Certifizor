@@ -1,9 +1,9 @@
-function openCertificateModal(studentId, name, from, to, email, organization) {
+function openCertificateModal(studentId, name, from, to, email, organization, certId) {
   document.getElementById('certificateModal').classList.remove('hidden');
   document.getElementById('modalStudentId').value = studentId;
 
-  // Generate the certificate with the student's data
-  generateCertificate(name, from, to, organization);
+  // Generate the certificate with the student's data and certId
+  generateCertificate(name, from, to, organization, certId);
 
   // Save the image data to a hidden input for sending after a short delay
   setTimeout(() => {
@@ -16,13 +16,13 @@ function closeModal() {
   document.getElementById('certificateModal').classList.add('hidden');
 }
 
-// Modify generateCertificate to accept organization
-function generateCertificate(name, fromDate, toDate, organization) {
+// Modify generateCertificate to accept organization and certId
+function generateCertificate(name, fromDate, toDate, organization, certId) {
   const canvas = document.getElementById('certificateCanvas');
   const ctx = canvas.getContext('2d');
-  const uniqueId = `KAIZEN${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+  // Use certId from database if provided, else fallback to random
+  const uniqueId = certId || `KAIZEN${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
   const message = `This is to certify that ${name} has successfully completed the internship at ${organization} from ${fromDate} to ${toDate}, demonstrating dedication, professionalism, and a strong willingness to learn throughout the training period.`;
-  console.log(fromDate, toDate);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const img = new Image();
   img.src = '/templates/cer.jpg';
@@ -47,7 +47,7 @@ function generateCertificate(name, fromDate, toDate, organization) {
     ctx.textAlign = 'left';
     // ctx.fillText(`Certificate ID: ${uniqueId}`, 50, canvas.height - 40);
 
-    // Generate QR Code for verification
+    // Generate QR Code for verification using certId from schema
     const verifyUrl = `https://certifizor.onrender.com/verify/${uniqueId}`;
     QRCode.toDataURL(verifyUrl, (err, url) => {
       if (err) return console.error('QR Error', err);
