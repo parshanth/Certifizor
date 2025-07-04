@@ -451,11 +451,13 @@ app.get('/verify/:id', async (req, res) => {
     if (!student) {
       return res.status(404).send('Certificate not Verified');
     }
-    res.render('pages/verify-certificate', {
+    // Redirect to the static HTML with query params
+    const query = new URLSearchParams({
       certId: student.certId || student._id,
       name: student.name,
       to: student.to
-    });
+    }).toString();
+    res.redirect(`/verify-certificate.html?${query}`);
   } catch (err) {
     res.status(500).send('Error verifying certificate');
   }

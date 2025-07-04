@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #181f2a;
+      color: #2ecc71;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .verify-container {
+      background: #232b3b;
+      border: 2px solid #2ecc71;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(44, 204, 113, 0.15);
+      padding: 2.5rem 2rem 2rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .logo {
+      width: 250px;
+      height: auto;
+      display: block;
+      margin-bottom: -1.5rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .title {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #2ecc71;
+      margin-bottom: 1rem;
+    }
+    .info {
+      color: #e0e0e0;
+      font-size: 1.1rem;
+      margin-bottom: 0.7rem;
+    }
+    .label {
+      color: #2ecc71;
+      font-weight: 500;
+    }
+    .congrats {
+      color: #2ecc71;
+      font-size: 1.15rem;
+      margin-top: 1.5rem;
+      font-weight: 500;
+    }
+    @media (max-width: 500px) {
+      .verify-container {
+        padding: 1.2rem 0.5rem;
+      }
+      .title {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="verify-container">
+    <img src="/images/logo.png" alt="Certifizor Logo" class="logo">
+    <div class="title">✅ This Certificate is Verified</div>
+    <div class="info"><span class="label">Certificate ID:</span> <span id="certId">...</span></div>
+    <div class="info"><span class="label">Name:</span> <span id="name">...</span></div>
+    <div class="info"><span class="label">Internship Completed:</span> <span id="to">...</span></div>
+    <div class="congrats">Congratulations on your achievement!</div>
+  </div>
+  <script>
+    // Example: fetch data from query params or API
+    // For production, you should fetch from an API endpoint
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+    // Example: set values from query params (for demo)
+    document.getElementById('certId').textContent = getQueryParam('certId') || '...';
+    document.getElementById('name').textContent = getQueryParam('name') || '...';
+    document.getElementById('to').textContent = getQueryParam('to') || '...';
+  </script>
+</body>
+</html>
