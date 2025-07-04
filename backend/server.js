@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const path = require('path');
 const dotenv = require('dotenv');
 const expressLayouts = require('express-ejs-layouts');
@@ -117,7 +118,8 @@ app.post('/reset-password', async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.send('User not found');
 
-  user.password = password; // ⚠️ You should hash this in production
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
   user.resetOtp = null;
   user.otpExpiry = null;
   await user.save();
@@ -547,7 +549,11 @@ app.post('/send-certificate', async (req, res) => {
 app.post('/pages/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user || user.password !== password) {
+  if (!user) {
+    return res.send('Invalid email or password');
+  }
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
     return res.send('Invalid email or password');
   }
   // Store organization in session
@@ -564,7 +570,9 @@ app.post('/pages/signup', async (req, res) => {
   }
   const existing = await User.findOne({ email });
   if (existing) return res.send('User already exists');
-  const user = new User({ Organization, email, password }); // ⚠️ Hash password in production!
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const user = new User({ Organization, email, password: hashedPassword });
   await user.save();
   res.redirect('/pages/login');
 });
