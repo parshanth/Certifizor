@@ -172,6 +172,7 @@ app.get('/home', requireLogin, async (req, res) => {
 
 // Edit Template Page
 const fsPromises = require('fs').promises;
+
 app.get('/edit-template', async (req, res) => {
   try {
     const templatesDir = path.join(__dirname, 'public', 'templates');
@@ -474,23 +475,28 @@ app.use('/api/students', studentRoutes);
 app.post('/send-certificate', async (req, res) => {
   const { studentId, certificateImage } = req.body;
   try {
+    if (!studentId || !certificateImage) {
+      return res.status(400).send('Student ID and certificate image are required');
+    }
+
     const student = await Student.findById(studentId);
     if (!student) return res.status(404).send('Student not found');
 
-    // Save the image temporarily
-    const base64Data = certificateImage.replace(/^data:image\/png;base64,/, "");
-    // const filePath = `./tmp/certificate_${studentId}.png`;
-    // fs.writeFileSync(filePath, base64Data, 'base64');
+    // Prepare image buffer directly from base64
+    const base64Match = certificateImage.match(/^data:image\/png;base64,(.+)$/);
+    if (!base64Match) {
+      return res.status(400).send('Invalid certificate image format');
+    }
+    const base64Data = base64Match[1];
+    const imageBuffer = Buffer.from(base64Data, 'base64');
 
     // Send email with nodemailer
     let transporter = nodemailer.createTransport({
-      // Configure your SMTP here
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
       }
-
     });
 
     await transporter.sendMail({
@@ -499,16 +505,17 @@ app.post('/send-certificate', async (req, res) => {
       subject: 'Internship Certificate from Certifizor',
       text: `Dear ${student.name},
 
-  Congratulations on successfully completing your internship at ${student.organization}!
+Congratulations on successfully completing your internship at ${student.organization}!
 
-  Please find your internship certificate attached to this email.
+Please find your internship certificate attached to this email.
 
-  Best regards,
-  Certifizor Team`,
+Best regards,
+Certifizor Team`,
       attachments: [
         {
           filename: 'certificate.png',
-          path: filePath
+          content: imageBuffer,
+          contentType: 'image/png'
         }
       ]
     });
@@ -516,9 +523,6 @@ app.post('/send-certificate', async (req, res) => {
     // Mark as printed
     student.printed = true;
     await student.save();
-
-    // Remove temp file
-    fs.unlinkSync(filePath);
 
     res.redirect('/home');
   } catch (err) {
