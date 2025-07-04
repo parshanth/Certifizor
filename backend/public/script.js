@@ -48,7 +48,7 @@ function generateCertificate(name, fromDate, toDate, organization) {
     // ctx.fillText(`Certificate ID: ${uniqueId}`, 50, canvas.height - 40);
 
     // Generate QR Code for verification
-    const verifyUrl = `http://localhost:3000/verify/${uniqueId}`;
+    const verifyUrl = `https://certifizor.onrender.com/verify/${uniqueId}`;
     QRCode.toDataURL(verifyUrl, (err, url) => {
       if (err) return console.error('QR Error', err);
       const qrImg = new Image();

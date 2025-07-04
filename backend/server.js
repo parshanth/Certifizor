@@ -440,42 +440,21 @@ app.get('/report', async (req, res) => {
 });
 
 // Certificate Verification Page
-app.get('/verify/:id', (req, res) => {
+app.get('/verify/:id', async (req, res) => {
   const certId = req.params.id;
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Certificate Verification</title>
-      <style>
-        body {
-          background-color: #121212;
-          color: #00ff99;
-          font-family: Arial, sans-serif;
-          text-align: center;
-          padding-top: 100px;
-        }
-        .box {
-          border: 2px solid #00ff99;
-          padding: 40px;
-          border-radius: 10px;
-          display: inline-block;
-        }
-        .id {
-          color: #ccc;
-          font-size: 0.9em;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="box">
-        <h1>✅ This Certificate is Verified</h1>
-        <p class="id">Certificate ID: ${certId}</p>
-      </div>
-    </body>
-    </html>
-  `;
-  res.send(html);
+  try {
+    const student = await Student.findOne({ certId }) || await Student.findById(certId);
+    if (!student) {
+      return res.status(404).send('Certificate not Verified');
+    }
+    res.render('pages/verify-certificate', {
+      certId: student.certId || student._id,
+      name: student.name,
+      to: student.to
+    });
+  } catch (err) {
+    res.status(500).send('Error verifying certificate');
+  }
 });
 
 // Logout

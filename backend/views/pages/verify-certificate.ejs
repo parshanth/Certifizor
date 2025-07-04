@@ -1,0 +1,11 @@
+<%- include('../partials/header') %>
+<div class="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-green-400">
+  <div class="border-2 border-green-400 p-8 rounded-lg bg-gray-800 shadow-lg text-center">
+    <h1 class="text-2xl font-bold mb-4">✅ This Certificate is Verified</h1>
+    <p class="text-lg mb-2">Certificate ID: <span class="text-gray-300"><%= certId %></span></p>
+    <p class="text-lg mb-2">Name: <span class="text-gray-300"><%= name %></span></p>
+    <p class="text-lg mb-2">Internship Completed: <span class="text-gray-300"><%= to %></span></p>
+    <p class="text-green-300 mt-4">Congratulations on your achievement!</p>
+  </div>
+</div>
+<%- include('../partials/sidebar') %>
