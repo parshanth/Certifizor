@@ -476,8 +476,8 @@ app.post('/send-certificate', async (req, res) => {
 
     // Save the image temporarily
     const base64Data = certificateImage.replace(/^data:image\/png;base64,/, "");
-    const filePath = `./tmp/certificate_${studentId}.png`;
-    fs.writeFileSync(filePath, base64Data, 'base64');
+    // const filePath = `./tmp/certificate_${studentId}.png`;
+    // fs.writeFileSync(filePath, base64Data, 'base64');
 
     // Send email with nodemailer
     let transporter = nodemailer.createTransport({
