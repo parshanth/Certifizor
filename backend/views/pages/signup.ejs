@@ -1,113 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
   <title>Sign Up - Certifizor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Poppins Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #e6f0ff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      background: linear-gradient(-45deg, #6b0436, #300c55, #0e4b24, #372207);
+      background-size: 400% 400%;
+      animation: animateBackground 10s ease infinite;
+    }
+
+    @keyframes animateBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
     .signup-container {
-      background-color: white;
-      padding: 20px 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 320px;
+      position: relative;
+      width: 360px;
+      padding: 60px 30px 40px;
+      border-radius: 12px;
       text-align: center;
+      color: #f1f1f1;
+      animation: fadeInUp 1s ease;
+
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.3),
+        0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .signup-container img {
+      width: 240px;
+      height: 240px;
+      object-fit: contain;
+      position: absolute;
+      top: -60px;
+      left: 56px;
     }
 
     h2 {
-      color: #007BFF;
+      margin-top: 70px;
+      margin-bottom: 20px;
+      color: #ffffff;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
     }
 
     input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 6px;
+      font-size: 15px;
+      backdrop-filter: blur(5px);
+    }
+
+    input::placeholder {
+      color: #ccc;
     }
 
     button {
-      width: 100%;
-      padding: 10px;
-      background-color: #007BFF;
-      color: white;
+      width: 50%;
+      margin-top: 10px;
+      padding: 12px;
+      background-color: #00c9a7;
+      color: #000;
       border: none;
-      border-radius: 4px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
 
     button:hover {
-      background-color: #0056b3;
-    }
-
-    #message {
-      margin-top: 10px;
+      background-color: #00ffe0;
+      transform: translateY(-2px);
+      box-shadow: 0 0 10px #00ffe0;
     }
 
     .link {
       display: block;
-      margin-top: 15px;
-      font-size: 0.9em;
-      color: #007BFF;
+      margin-top: 12px;
+      color: #00ffe0;
       text-decoration: none;
+      font-size: 0.9em;
     }
 
     .link:hover {
       text-decoration: underline;
     }
+
+    #message {
+      color: red;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 400px) {
+      .signup-container {
+        width: 90%;
+        padding: 60px 20px 30px;
+      }
+
+      .signup-container img {
+        width: 100px;
+        height: 100px;
+        top: -50px;
+        left: calc(50% - 50px);
+      }
+
+      h2 {
+        margin-top: 60px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="signup-container">
+    <img src="/images/logo.png" alt="Certifizor Logo" />
     <h2>Sign Up</h2>
-    <form method="POST" action="/pages/signup">
-      <input type="text" name="Organization" placeholder="Organization" required>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Password" required>
+    <form method="POST" action="/pages/signup" id="signupForm">
+      <input type="text" name="Organization" placeholder="Organization" required />
+      <input type="email" name="email" id="email" placeholder="Email" required />
+      <input type="password" name="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
       <button type="submit">Sign Up</button>
+      <p id="message"></p>
     </form>
-
-    <p id="message"></p>
-
     <a class="link" href="/pages/login">Already a user? Please login.</a>
   </div>
 
   <script>
-    document.getElementById('signupForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const username = document.getElementById('username').value.trim();
-      const email = document.getElementById('email').value.trim();
+    document.getElementById('signupForm').addEventListener('submit', function (event) {
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       const message = document.getElementById('message');
 
-      if (!username || !email || !password || !confirmPassword) {
-        message.style.color = 'red';
-        message.textContent = 'Please fill in all fields.';
-        return;
-      }
-
       if (password !== confirmPassword) {
+        event.preventDefault();
         message.style.color = 'red';
         message.textContent = 'Passwords do not match.';
-        return;
       }
-
-      alert('Sign Up Successful!');
-      message.style.color = 'green';
-      message.textContent = 'Account created successfully!';
-      document.getElementById('signupForm').reset();
     });
   </script>
 </body>
