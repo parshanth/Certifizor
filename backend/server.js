@@ -43,9 +43,10 @@ app.use(session({
   saveUninitialized: false
 }));
 
-// Global layout variable
+// Global layout variable and session exposure for EJS
 app.use((req, res, next) => {
   res.locals.pageTitle = 'Certifizor';
+  res.locals.session = req.session;
   next();
 });
 
@@ -213,6 +214,7 @@ app.get('/manage', requireLogin, async (req, res) => {
     res.status(500).send('Failed to load student data');
   }
 });
+
 app.post('/manage', requireLogin, async (req, res) => {
   const { name, email, from, to, phone, college, internshipRole } = req.body;
   if (!name || !email || !from || !to || !phone || !college || !internshipRole) {
@@ -236,6 +238,7 @@ app.post('/manage', requireLogin, async (req, res) => {
     res.status(500).send('Failed to add student');
   }
 });
+
 app.post('/manage/delete/:id', async (req, res) => {
   try {
     await Student.findByIdAndDelete(req.params.id);
@@ -544,10 +547,45 @@ app.post('/pages/login', async (req, res) => {
   if (!isMatch) {
     return res.send('Invalid email or password');
   }
+  if (user.isApproved === false) {
+    return res.redirect('/waiting-approval');
+  }
   // Store organization in session
   req.session.organization = user.Organization;
   req.session.userId = user._id;
+  req.session.isAdmin = user.admin === true;
   res.redirect('/home');
+});
+// Waiting for Approval Page
+app.get('/waiting-approval', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'waiting-approval.html'));
+});
+// Admin Requests Page
+app.get('/admin-requests', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).send('Forbidden: Admins only');
+  }
+  // Find users who are not approved
+  const pendingUsers = await User.find({ isApproved: false });
+  res.render('pages/admin-requests', { pageTitle: 'Admin Requests', pendingUsers });
+});
+
+// Approve user handler
+app.post('/admin-requests/approve/:id', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).send('Forbidden: Admins only');
+  }
+  await User.findByIdAndUpdate(req.params.id, { isApproved: true });
+  res.redirect('/admin-requests');
+});
+
+// Deny user handler (delete user)
+app.post('/admin-requests/deny/:id', async (req, res) => {
+  if (!req.session.isAdmin) {
+    return res.status(403).send('Forbidden: Admins only');
+  }
+  await User.findByIdAndDelete(req.params.id);
+  res.redirect('/admin-requests');
 });
 
 // Signup Handler
@@ -562,6 +600,10 @@ app.post('/pages/signup', async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, salt);
   const user = new User({ Organization, email, password: hashedPassword });
   await user.save();
+  // After signup, check if user is approved (should be false by default)
+  if (user.isApproved === false) {
+    return res.redirect('/waiting-approval');
+  }
   res.redirect('/pages/login');
 });
 

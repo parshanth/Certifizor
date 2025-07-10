@@ -1,0 +1,100 @@
+<style>
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #1e1e2f;
+    color: #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #333;
+    text-align: left;
+  }
+
+  .admin-table th {
+    background-color: #29293d;
+    color: #00ffe0;
+    font-weight: 600;
+  }
+
+  .admin-table td {
+    background-color: #252536;
+  }
+
+  .btn-approve {
+    background-color: #00e676;
+    color: #000;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+  }
+
+  .btn-approve:hover {
+    background-color: #00c853;
+  }
+
+  .no-requests-msg {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #252536;
+    color: #bbb;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #444;
+  }
+    .btn-deny {
+    background-color: #ff5252;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    margin-left: 8px;
+  }
+
+  .btn-deny:hover {
+    background-color: #d32f2f;
+  }
+</style>
+
+<% if (pendingUsers && pendingUsers.length > 0) { %>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Organization</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% pendingUsers.forEach(function(user) { %>
+        <tr>
+          <td><%= user.email %></td>
+          <td><%= user.Organization %></td>
+          <td>
+            <form method="POST" action="/admin-requests/approve/<%= user._id %>" style="display:inline;">
+              <button type="submit" class="btn-approve">Approve</button>
+            </form>
+            <form method="POST" action="/admin-requests/deny/<%= user._id %>" style="display:inline; margin-left:8px;">
+              <button type="submit" class="btn-deny">Deny</button>
+            </form>
+          </td>
+
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div class="no-requests-msg">No requests to handle yet.</div>
+<% } %>

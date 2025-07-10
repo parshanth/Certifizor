@@ -12,5 +12,8 @@
     <a href="/edit-template" class="block px-4 py-2 rounded-lg hover:bg-gray-700 transition">🖼️ Edit Template</a>
     <a href="/manage" class="block px-4 py-2 rounded-lg hover:bg-gray-700 transition">👤 Manage Students</a>
     <a href="/report" class="block px-4 py-2 rounded-lg hover:bg-gray-700 transition">📊 Report</a>
+    <% if (typeof session !== 'undefined' && session.isAdmin) { %>
+      <a href="/admin-requests" class="block px-4 py-2 rounded-lg hover:bg-gray-700 transition">🛠️ Admin Requests</a>
+    <% } %>
   </nav>
 </div>
