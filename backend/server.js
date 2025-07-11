@@ -129,9 +129,9 @@ app.post('/reset-password', async (req, res) => {
 });
 
 
-// Redirect root to login
+// Serve index.html as the front page
 app.get('/', (req, res) => {
-  res.redirect('/pages/login');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
